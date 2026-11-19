@@ -1,0 +1,273 @@
+/*
+ * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
+ * - Keep every @import in this top block, above @theme and the rest of the file. Install an
+ *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
+ *   build resolves @import from the filesystem. Load those with a <link> in the head() of
+ *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
+ */
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/overpass/wght.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The design lives in this file: oklch color tokens on the shadcn variables
+ * (--background, --foreground, --primary, --secondary, --muted, --accent, ...) plus
+ * new tokens as needed, font tokens, and custom styles and animations.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-signal: var(--signal);
+  --color-optic: var(--optic);
+  --color-ink: var(--ink);
+  --color-chalk: var(--chalk);
+  --color-line: var(--line);
+  --color-live: var(--live);
+  --color-dim: var(--dim);
+  --font-sans: "Overpass Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-num: "Archivo Variable", ui-sans-serif, sans-serif;
+}
+
+:root {
+  /* EY world: pale cool-grey ground, EY dark grey (#2E2E38) ink, EY yellow (#FFE600) signal. */
+  --chalk: oklch(0.968 0.004 286);
+  --ink: oklch(0.3 0.018 285);
+  --optic: oklch(0.917 0.189 103);
+  --line: oklch(0.88 0.007 286);
+  --dim: oklch(0.47 0.016 285);
+  --live: oklch(0.6 0.21 25);
+
+  --radius: 0.875rem;
+  --background: var(--chalk);
+  --foreground: var(--ink);
+  --card: oklch(0.995 0.002 286);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.995 0.002 286);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--optic);
+  --secondary: oklch(0.93 0.006 286);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.93 0.006 286);
+  --muted-foreground: var(--dim);
+  --accent: var(--optic);
+  --accent-foreground: var(--ink);
+  --destructive: var(--live);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink);
+  --signal: var(--optic);
+  --chart-1: var(--ink);
+  --chart-2: var(--optic);
+  --chart-3: var(--dim);
+  --chart-4: var(--live);
+  --chart-5: var(--line);
+  --sidebar: var(--chalk);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--optic);
+  --sidebar-accent: var(--optic);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--ink);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-color: var(--ink) transparent;
+    scrollbar-width: thin;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--optic);
+    color: var(--ink);
+  }
+
+  input {
+    caret-color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+}
+
+/*
+ * Type: Overpass (the open Highway Gothic, the lettering EY's Interstate grew from) for every
+ * word; condensed Archivo only for the numbers that must be read at a distance: times and scores.
+ */
+@utility font-wide {
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+}
+@utility font-narrow {
+  font-family: var(--font-num);
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+}
+@utility font-semi-narrow {
+  font-family: var(--font-sans);
+}
+
+/* The one authored moment: picking your name floods the pass in EY yellow. */
+@keyframes flood {
+  from {
+    clip-path: circle(0% at var(--fx, 50%) var(--fy, 0%));
+  }
+  to {
+    clip-path: circle(150% at var(--fx, 50%) var(--fy, 0%));
+  }
+}
+.flood-in {
+  animation: flood 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.6);
+    opacity: 0.55;
+  }
+}
+.live-dot {
+  animation: beat 1.4s ease-in-out infinite;
+}
+
+/* Bracket: tiles and lines slide one round across and close up together. */
+.bracket-move {
+  transition:
+    left 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    top 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 320ms ease-out;
+}
+.bracket {
+  transition: height 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: pan-y;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bracket-move,
+  .bracket,
+  .flood-in,
+  .live-dot {
+    animation: none;
+  }
+}
+
+/* Event picker rows: a hairline list; dark grey sweeps in on hover / press. */
+.team-row {
+  color: var(--ink);
+  transition: color 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.team-row-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--team);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.team-row:hover,
+.team-row:focus-visible,
+.team-row:active {
+  color: var(--team-ink);
+}
+.team-row:hover .team-row-fill,
+.team-row:focus-visible .team-row-fill,
+.team-row:active .team-row-fill {
+  clip-path: inset(0 0 0 0);
+}
+.team-row:focus-visible {
+  outline-offset: -3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-row-fill {
+    transition: none;
+  }
+}
+
+/* While someone types their name, the tab bar steps aside so the keyboard and results share the screen. */
+body:has(input[data-finder]:focus) .bottom-nav {
+  display: none;
+}
