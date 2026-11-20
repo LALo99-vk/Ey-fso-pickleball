@@ -8,6 +8,7 @@ import {
   formatClock,
   matchScore,
   meridiem,
+  timeLabel,
   nextIfWin,
   norm,
   opponentOf,
@@ -177,7 +178,7 @@ export function Finder({
                     {e.name}
                   </span>
                   <span className="block text-[12.5px] font-semibold opacity-75">
-                    {e.format === "knockout" ? "Knockout" : "Group, then final"}
+                    {e.formatLabel}
                     {counts(e.id) ? ` · ${counts(e.id)} ${e.doubles ? "pairs" : "players"}` : ""}
                   </span>
                 </span>
@@ -283,7 +284,12 @@ export function Pass({
               return (
                 <li key={match.id}>
                   <div className="grid grid-cols-[4.25rem_1fr] gap-3">
-                    <TimeStamp minutes={match.minutes} raw={match.time} />
+                    <TimeStamp
+                      minutes={match.minutes}
+                      raw={match.time}
+                      windowEnd={match.windowEnd}
+                      no={match.no}
+                    />
                     <MatchCard match={match} clock={clock} me={me.name} />
                   </div>
                   {ahead && playerSide(ahead, me.name) === 0 && (
@@ -296,10 +302,8 @@ export function Pass({
                           <span className="font-extrabold text-ink">
                             {stageLabel(ahead).toLowerCase()}
                           </span>
-                          {ahead.minutes !== undefined && (
-                            <span className="whitespace-nowrap">
-                              {` · ${formatClock(ahead.minutes)} ${meridiem(ahead.minutes)}`}
-                            </span>
+                          {timeLabel(ahead) && (
+                            <span className="whitespace-nowrap">{` · ${timeLabel(ahead)}`}</span>
                           )}
                           {ahead.court && (
                             <span className="whitespace-nowrap">{` · Court ${ahead.court}`}</span>
@@ -385,12 +389,24 @@ function NextUp({
       </div>
       <p className="mt-1 flex items-baseline gap-2">
         <span className="font-narrow text-[clamp(6rem,34vw,10.5rem)] font-black leading-[0.8] tracking-[-0.02em] tabular-nums">
-          {formatClock(next.minutes, next.time)}
+          {next.minutes === undefined && next.no !== undefined
+            ? `M${next.no}`
+            : formatClock(next.minutes, next.time)}
         </span>
         <span className="font-narrow text-[clamp(1.5rem,7vw,2.25rem)] font-black">
-          {meridiem(next.minutes)}
+          {next.minutes === undefined
+            ? ""
+            : next.windowEnd !== undefined
+              ? `– ${formatClock(next.windowEnd)} ${meridiem(next.windowEnd)}`
+              : meridiem(next.minutes)}
         </span>
       </p>
+      {next.minutes === undefined && (
+        <p className="mt-2 text-[15px] font-bold">
+          {eventMeta(next.event).name}: {eventMeta(next.event).window}. Stay near the courts, the
+          desk calls each match.
+        </p>
+      )}
       <dl className="mt-4 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2.5 text-[17px]">
         <dt className="text-[13px] font-bold opacity-75">Court</dt>
         <dd className="font-narrow text-[30px] font-black leading-none">{next.court ?? "TBA"}</dd>
@@ -428,9 +444,7 @@ function NextUp({
       {ahead && (
         <p className="mt-5 rounded-2xl bg-current/12 px-4 py-3 text-[15px] font-bold leading-snug">
           Win and you're into the {stageLabel(ahead).toLowerCase()}
-          {ahead.minutes !== undefined
-            ? ` at ${formatClock(ahead.minutes)} ${meridiem(ahead.minutes)}`
-            : ""}
+          {timeLabel(ahead) ? ` (${timeLabel(ahead)})` : ""}
           {ahead.court ? `, Court ${ahead.court}` : ""}.
         </p>
       )}
@@ -448,18 +462,37 @@ function opponentPlayers(match: Match, name: string): string[] {
 export function TimeStamp({
   minutes,
   raw,
+  windowEnd,
+  no,
   className,
 }: {
   minutes?: number | undefined;
   raw?: string | undefined;
+  windowEnd?: number | undefined;
+  no?: number | undefined;
   className?: string | undefined;
 }) {
+  if (minutes === undefined) {
+    // No match times: show the match number, which is the calling order.
+    return (
+      <div className={cn("pt-2.5 text-right", className)}>
+        <p className="font-narrow text-[30px] font-black leading-none tabular-nums">
+          {no !== undefined ? `M${no}` : "TBA"}
+        </p>
+        <p className="mt-0.5 text-[11px] font-extrabold text-dim">Match</p>
+      </div>
+    );
+  }
   return (
     <div className={cn("pt-2.5 text-right", className)}>
       <p className="font-narrow text-[30px] font-black leading-none tabular-nums">
         {formatClock(minutes, raw)}
       </p>
-      <p className="mt-0.5 text-[11px] font-extrabold text-dim">{meridiem(minutes)}</p>
+      <p className="mt-0.5 text-[11px] font-extrabold text-dim">
+        {windowEnd !== undefined
+          ? `to ${formatClock(windowEnd)} ${meridiem(windowEnd)}`
+          : meridiem(minutes)}
+      </p>
     </div>
   );
 }

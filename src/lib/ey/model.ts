@@ -1,9 +1,9 @@
 /**
  * EY Pickleball Tournament: the tournament model.
  *
- * Five events. Men's Singles, Men's Doubles and Mixed Doubles are straight
- * knockouts; Women's Singles and Women's Doubles play a group round robin and
- * the top of the table go straight to the final.
+ * Five events. Men's Singles and Men's Doubles are straight knockouts. Mixed
+ * Doubles plays two groups, then crossover semis and a final. Women's Singles
+ * and Women's Doubles play one group and the top two go straight to the final.
  *
  * Everything here is pure: the server reads the sheet, these functions turn
  * the grids into entries, matches and tables. Tables are always computed from
@@ -16,6 +16,10 @@ export type EventMeta = {
   id: EventId;
   name: string;
   format: "knockout" | "groups";
+  /** Short format line for cards: "Knockout", "Groups, then semis". */
+  formatLabel: string;
+  /** When the event runs. Matches have no times; the desk calls them in order. */
+  window: string;
   doubles: boolean;
 };
 
@@ -23,31 +27,41 @@ export const EVENTS: EventMeta[] = [
   {
     id: "MS",
     name: "Men's Singles",
+    window: "9:45 AM – 5:45 PM",
     format: "knockout",
+    formatLabel: "Knockout",
     doubles: false,
   },
   {
     id: "MD",
     name: "Men's Doubles",
+    window: "1:30 PM – 6:15 PM",
     format: "knockout",
+    formatLabel: "Knockout",
     doubles: true,
   },
   {
     id: "XD",
     name: "Mixed Doubles",
-    format: "knockout",
+    window: "9:30 AM – 7:00 PM",
+    format: "groups",
+    formatLabel: "Groups, then semis",
     doubles: true,
   },
   {
     id: "WS",
     name: "Women's Singles",
+    window: "12:30 PM – 6:30 PM",
     format: "groups",
+    formatLabel: "Group, then final",
     doubles: false,
   },
   {
     id: "WD",
     name: "Women's Doubles",
+    window: "12:00 PM – 6:15 PM",
     format: "groups",
+    formatLabel: "Group, then final",
     doubles: true,
   },
 ];
@@ -117,6 +131,8 @@ export type Match = {
   /** Entries left in the round (32, 16, ... 2); 0 for group matches. */
   size: number;
   minutes?: number | undefined;
+  /** End of a time window ("9:30 – 11:45"); the desk calls the match inside it. */
+  windowEnd?: number | undefined;
   time?: string | undefined;
   date?: string | undefined;
   court?: string | undefined;
@@ -275,6 +291,29 @@ export function parseClock(raw: string | undefined): number | undefined {
   if (!ap && h >= 1 && h <= 6) h += 12;
   if (h > 23 || min > 59) return undefined;
   return h * 60 + min;
+}
+
+/** "9:30 – 11:45" (or "9:30-11:45", "9:30 to 11:45") → the end, in minutes. */
+export function parseWindowEnd(raw: string | undefined): number | undefined {
+  if (!raw) return undefined;
+  const parts = raw.split(/\s*(?:[–—-]|\bto\b)\s*/i).filter(Boolean);
+  if (parts.length < 2) return undefined;
+  const start = parseClock(parts[0]);
+  const end = parseClock(parts[1]);
+  if (end === undefined) return undefined;
+  return start !== undefined && end < start ? end + 12 * 60 : end;
+}
+
+/** "9:30 AM", or for a window "9:30 – 11:45 AM" / "11:45 AM – 2:00 PM". */
+export function timeLabel(m: {
+  minutes?: number | undefined;
+  windowEnd?: number | undefined;
+  time?: string | undefined;
+}): string | undefined {
+  if (m.minutes === undefined) return m.time;
+  if (m.windowEnd === undefined) return `${formatClock(m.minutes)} ${meridiem(m.minutes)}`;
+  const sameHalf = meridiem(m.minutes) === meridiem(m.windowEnd);
+  return `${formatClock(m.minutes)}${sameHalf ? "" : ` ${meridiem(m.minutes)}`} – ${formatClock(m.windowEnd)} ${meridiem(m.windowEnd)}`;
 }
 
 export function formatClock(minutes: number | undefined, raw?: string): string {
@@ -467,6 +506,7 @@ export function parseFixtures(grid: Grid | undefined, defaultEvent?: EventMeta):
       date: get(row, c.date),
       time: get(row, c.time),
       minutes: parseClock(get(row, c.time)),
+      windowEnd: parseWindowEnd(get(row, c.time)),
       court: get(row, c.court)?.replace(/^court\s*/i, ""),
       side1: s1raw,
       side2: s2raw,
@@ -488,9 +528,9 @@ export function sortMatches(matches: Match[]): Match[] {
   return [...matches].sort(
     (a, b) =>
       (a.minutes ?? 9999) - (b.minutes ?? 9999) ||
+      (a.no ?? 9999) - (b.no ?? 9999) ||
       (a.court ?? "").localeCompare(b.court ?? "", undefined, { numeric: true }) ||
-      order(a.event) - order(b.event) ||
-      (a.no ?? 0) - (b.no ?? 0),
+      order(a.event) - order(b.event),
   );
 }
 

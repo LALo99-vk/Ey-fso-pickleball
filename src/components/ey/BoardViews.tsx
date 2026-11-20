@@ -11,6 +11,7 @@ import {
   formatPd,
   groupsOf,
   meridiem,
+  timeLabel,
   norm,
   standings,
   winnerOf,
@@ -53,6 +54,10 @@ export function DrawsView({
     <div>
       <ViewTitle>Draws</ViewTitle>
       <EventPills events={KNOCKOUT_EVENTS} active={event} onChange={onEvent} />
+      <p className="mt-4 text-[15px] font-extrabold">
+        {meta.window}
+        <span className="font-semibold text-dim"> · no fixed match times, the desk calls you</span>
+      </p>
 
       {champion && <Champion meta={meta} name={champion.name} />}
 
@@ -86,11 +91,7 @@ function MatchRow({ match, clock, me }: { match: Match; clock: Clock; me?: strin
     <div>
       <p className="mb-1 flex items-baseline gap-2 px-1 text-[12px] font-bold text-dim">
         {match.no !== undefined && <span className="text-ink">M{match.no}</span>}
-        {match.minutes !== undefined && (
-          <span className="tabular-nums">
-            {formatClock(match.minutes)} {meridiem(match.minutes)}
-          </span>
-        )}
+        {timeLabel(match) && <span className="tabular-nums">{timeLabel(match)}</span>}
       </p>
       <MatchCard match={match} clock={clock} me={me} showEvent={false} showRound={false} />
     </div>
@@ -146,10 +147,16 @@ export function GroupsView({
     <div>
       <ViewTitle>Groups</ViewTitle>
       <EventPills events={GROUP_EVENTS} active={event} onChange={onEvent} />
+      <p className="mt-4 text-[15px] font-extrabold">
+        {meta.window}
+        <span className="font-semibold text-dim"> · no fixed match times, the desk calls you</span>
+      </p>
       <p className="mt-4 max-w-[52ch] text-[14px] text-dim">
         Everyone plays everyone in the group. A win is worth {POINTS_PER_WIN} points. Level on
-        points: head-to-head, then points difference (PD: points won minus lost). The top go
-        straight to the final.
+        points: head-to-head, then points difference (PD: points won minus lost).{" "}
+        {event === "XD"
+          ? "The top 2 of each group play the semi-finals (1st v 2nd of the other group)."
+          : "The top go straight to the final."}
       </p>
 
       {champion && <Champion meta={meta} name={champion.name} />}
@@ -330,7 +337,7 @@ export function PlayersView({
       <section className="mt-5 overflow-hidden rounded-[28px] bg-ink text-white">
         <div className="px-5 pb-5 pt-4">
           <p className="text-[14px] font-bold opacity-80">
-            {meta.format === "knockout" ? "Knockout" : "Group, then final"}
+            {meta.formatLabel} · {meta.window}
           </p>
           <h3 className="font-wide mt-1 text-[clamp(2rem,9vw,3rem)] font-black leading-[0.92] tracking-[-0.03em] text-balance">
             {meta.name}

@@ -9,6 +9,7 @@ import {
   isBye,
   matchScore,
   meridiem,
+  timeLabel,
   nextIfWin,
   norm,
   playerSide,
@@ -534,11 +535,7 @@ function Tile({
     >
       <span className="flex h-[20px] items-center gap-1.5 px-2.5 text-[10.5px] font-bold text-dim">
         {match.no !== undefined && <span className="text-ink">M{match.no}</span>}
-        {match.minutes !== undefined && (
-          <span className="tabular-nums">
-            {formatClock(match.minutes)} {meridiem(match.minutes)}
-          </span>
-        )}
+        {timeLabel(match) && <span className="tabular-nums">{timeLabel(match)}</span>}
         {match.court && <span>· Ct {match.court}</span>}
         <span className="ml-auto">
           {state === "live" ? (
@@ -642,14 +639,7 @@ function MatchSheet({
               </DrawerTitle>
             </DrawerHeader>
             <dl className="grid grid-cols-3 gap-2">
-              <Fact
-                label="Time"
-                value={
-                  m.minutes !== undefined
-                    ? `${formatClock(m.minutes)} ${meridiem(m.minutes)}`
-                    : (m.time ?? "TBA")
-                }
-              />
+              <Fact label="Time" value={timeLabel(m) ?? meta.window} />
               <Fact label="Court" value={m.court ?? "TBA"} />
               <Fact
                 label="Status"
@@ -721,8 +711,7 @@ function MatchSheet({
                   ? `${sideName(m, s.winner as 1 | 2)} play${winnerOf(m)!.players.length > 1 ? "" : "s"}`
                   : "The winner plays"}{" "}
                 the <span className="font-extrabold">{stageLabel(ahead).toLowerCase()}</span>
-                {ahead.minutes !== undefined &&
-                  ` at ${formatClock(ahead.minutes)} ${meridiem(ahead.minutes)}`}
+                {timeLabel(ahead) && ` (${timeLabel(ahead)})`}
                 {ahead.court && `, Court ${ahead.court}`}.
               </p>
             )}
