@@ -18,8 +18,8 @@ export type EventMeta = {
   format: "knockout" | "groups";
   /** Short format line for cards: "Knockout", "Groups, then semis". */
   formatLabel: string;
-  /** When the event runs. Matches have no times; the desk calls them in order. */
-  window: string;
+  /** When players should be at the ground. Matches have no times; the desk calls them in order. */
+  start: string;
   doubles: boolean;
 };
 
@@ -27,7 +27,7 @@ export const EVENTS: EventMeta[] = [
   {
     id: "MS",
     name: "Men's Singles",
-    window: "9:45 AM – 5:45 PM",
+    start: "9:30 AM",
     format: "knockout",
     formatLabel: "Knockout",
     doubles: false,
@@ -35,7 +35,7 @@ export const EVENTS: EventMeta[] = [
   {
     id: "MD",
     name: "Men's Doubles",
-    window: "1:30 PM – 6:15 PM",
+    start: "12:00 PM",
     format: "knockout",
     formatLabel: "Knockout",
     doubles: true,
@@ -43,7 +43,7 @@ export const EVENTS: EventMeta[] = [
   {
     id: "XD",
     name: "Mixed Doubles",
-    window: "9:30 AM – 7:00 PM",
+    start: "12:30 PM",
     format: "groups",
     formatLabel: "Groups, then semis",
     doubles: true,
@@ -51,7 +51,7 @@ export const EVENTS: EventMeta[] = [
   {
     id: "WS",
     name: "Women's Singles",
-    window: "12:30 PM – 6:30 PM",
+    start: "9:30 AM",
     format: "groups",
     formatLabel: "Group, then final",
     doubles: false,
@@ -59,7 +59,7 @@ export const EVENTS: EventMeta[] = [
   {
     id: "WD",
     name: "Women's Doubles",
-    window: "12:00 PM – 6:15 PM",
+    start: "9:30 AM",
     format: "groups",
     formatLabel: "Group, then final",
     doubles: true,

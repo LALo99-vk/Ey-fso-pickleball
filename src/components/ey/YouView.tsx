@@ -403,8 +403,8 @@ function NextUp({
       </p>
       {next.minutes === undefined && (
         <p className="mt-2 text-[15px] font-bold">
-          {eventMeta(next.event).name}: {eventMeta(next.event).window}. Stay near the courts, the
-          desk calls each match.
+          {eventMeta(next.event).name} starts {eventMeta(next.event).start}. Be at the ground by
+          then, the desk calls each match.
         </p>
       )}
       <dl className="mt-4 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2.5 text-[17px]">

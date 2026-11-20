@@ -55,8 +55,11 @@ export function DrawsView({
       <ViewTitle>Draws</ViewTitle>
       <EventPills events={KNOCKOUT_EVENTS} active={event} onChange={onEvent} />
       <p className="mt-4 text-[15px] font-extrabold">
-        {meta.window}
-        <span className="font-semibold text-dim"> · no fixed match times, the desk calls you</span>
+        Starts {meta.start}
+        <span className="font-semibold text-dim">
+          {" "}
+          · be at the ground by then. No fixed match times, the desk calls each match.
+        </span>
       </p>
 
       {champion && <Champion meta={meta} name={champion.name} />}
@@ -148,8 +151,11 @@ export function GroupsView({
       <ViewTitle>Groups</ViewTitle>
       <EventPills events={GROUP_EVENTS} active={event} onChange={onEvent} />
       <p className="mt-4 text-[15px] font-extrabold">
-        {meta.window}
-        <span className="font-semibold text-dim"> · no fixed match times, the desk calls you</span>
+        Starts {meta.start}
+        <span className="font-semibold text-dim">
+          {" "}
+          · be at the ground by then. No fixed match times, the desk calls each match.
+        </span>
       </p>
       <p className="mt-4 max-w-[52ch] text-[14px] text-dim">
         Everyone plays everyone in the group. A win is worth {POINTS_PER_WIN} points. Level on
@@ -337,7 +343,7 @@ export function PlayersView({
       <section className="mt-5 overflow-hidden rounded-[28px] bg-ink text-white">
         <div className="px-5 pb-5 pt-4">
           <p className="text-[14px] font-bold opacity-80">
-            {meta.formatLabel} · {meta.window}
+            {meta.formatLabel} · starts {meta.start}
           </p>
           <h3 className="font-wide mt-1 text-[clamp(2rem,9vw,3rem)] font-black leading-[0.92] tracking-[-0.03em] text-balance">
             {meta.name}

@@ -639,7 +639,7 @@ function MatchSheet({
               </DrawerTitle>
             </DrawerHeader>
             <dl className="grid grid-cols-3 gap-2">
-              <Fact label="Time" value={timeLabel(m) ?? meta.window} />
+              <Fact label="Time" value={timeLabel(m) ?? "Desk calls"} />
               <Fact label="Court" value={m.court ?? "TBA"} />
               <Fact
                 label="Status"
