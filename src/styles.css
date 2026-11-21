@@ -227,8 +227,35 @@
   touch-action: pan-y;
 }
 
+/* Present mode: the spotlight fades up on each change of event; a thin bar times the turn. */
+@keyframes spot-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.spot-in {
+  animation: spot-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes spot-timer {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.spot-timer {
+  animation: spot-timer linear both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bracket-move,
+  .spot-in,
   .bracket,
   .flood-in,
   .live-dot {

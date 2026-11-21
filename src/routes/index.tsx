@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { GitFork, ListOrdered, UserRound, UsersRound } from "lucide-react";
+import { GitFork, ListOrdered, Tv, UserRound, UsersRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +18,7 @@ import { getTournament } from "@/lib/ey/server";
 import { useClock } from "@/components/ey/shared";
 import { Finder, Pass, type Me } from "@/components/ey/YouView";
 import { DrawsView, GroupsView, PlayersView } from "@/components/ey/BoardViews";
+import { PresentView } from "@/components/ey/PresentView";
 
 type Tab = "you" | "draws" | "groups" | "players";
 const TABS: { id: Tab; label: string; icon: typeof UserRound }[] = [
@@ -44,10 +45,16 @@ const EVENT_IDS = EVENTS.map((e) => e.id);
 export const Route = createFileRoute("/")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { tab?: Tab | undefined; ev?: EventId | undefined; demo?: 1 | undefined } => ({
+  ): {
+    tab?: Tab | undefined;
+    ev?: EventId | undefined;
+    demo?: 1 | undefined;
+    present?: 1 | undefined;
+  } => ({
     tab: TABS.some((t) => t.id === search["tab"]) ? (search["tab"] as Tab) : undefined,
     ev: EVENT_IDS.includes(search["ev"] as EventId) ? (search["ev"] as EventId) : undefined,
     demo: search["demo"] === 1 || search["demo"] === "1" ? 1 : undefined,
+    present: search["present"] === 1 || search["present"] === "1" ? 1 : undefined,
   }),
   loaderDeps: ({ search }) => ({ demo: Boolean(search.demo) }),
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(tournamentQuery(deps.demo)),
@@ -83,6 +90,8 @@ function App() {
     ...tournamentQuery(demo),
     initialData: initial,
     initialDataUpdatedAt: initial.updatedAt,
+    // The TV board refreshes faster, and keeps going while the phone is casting.
+    ...(search.present ? { refetchInterval: 15_000, refetchIntervalInBackground: true } : {}),
   });
   const [me, setMeState] = useState<Me | null>(null);
 
@@ -154,6 +163,20 @@ function App() {
     ).id;
   const setEvent = (t: Tab) => (ev: EventId) =>
     void navigate({ search: (s) => ({ ...s, tab: t, ev }), replace: true });
+
+  const present = () => {
+    // Full screen needs the tap itself; iPhones without support just get the board.
+    void document.documentElement.requestFullscreen?.().catch(() => {});
+    void navigate({ search: (s) => ({ ...s, present: 1 }) });
+  };
+  const exitPresent = () => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    void navigate({ search: (s) => ({ ...s, present: undefined }), replace: true });
+  };
+
+  if (search.present) {
+    return <PresentView data={tournament} matches={matches} onExit={exitPresent} />;
+  }
 
   const you = validMe ? (
     <Pass
@@ -232,7 +255,17 @@ function App() {
               </button>
             ))}
           </nav>
-          <PoweredBy className="hidden lg:flex" />
+          <div className="flex shrink-0 items-center gap-5">
+            <PoweredBy className="hidden lg:flex" />
+            <button
+              type="button"
+              onClick={present}
+              className="flex h-9 items-center gap-1.5 rounded-full bg-ink px-3.5 text-[13px] font-extrabold text-optic"
+            >
+              <Tv className="size-4" strokeWidth={2.4} aria-hidden="true" />
+              Present
+            </button>
+          </div>
         </div>
       </header>
 
