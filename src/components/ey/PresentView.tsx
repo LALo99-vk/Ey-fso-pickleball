@@ -114,6 +114,8 @@ export function PresentView({ data, matches, onExit, initialEvent }: Props) {
     ),
   );
   const event = EVENTS[spot]!.id;
+  // The desk calls from the match list; the draw / table is one tap away. Kept across events.
+  const [view, setView] = useState<SpotView>("matches");
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-[#1d1d24] text-white">
@@ -131,7 +133,15 @@ export function PresentView({ data, matches, onExit, initialEvent }: Props) {
             onPick={toggle}
           />
           <div className="grid min-h-0 flex-1 grid-cols-[1fr_430px] gap-6 px-7 pb-6 pt-5">
-            <Spotlight key={event} event={event} data={data} matches={matches} onHold={hold} />
+            <Spotlight
+              key={event}
+              event={event}
+              data={data}
+              matches={matches}
+              onHold={hold}
+              view={view}
+              onView={setView}
+            />
             <Rail matches={matches} />
           </div>
         </div>
@@ -339,16 +349,22 @@ function EventStrip({
  * Spotlight: one event, large
  * ------------------------------------------------------------------ */
 
+type SpotView = "matches" | "draw";
+
 function Spotlight({
   event,
   data,
   matches,
   onHold,
+  view,
+  onView,
 }: {
   event: EventId;
   data: Tournament;
   matches: Match[];
   onHold: () => void;
+  view: SpotView;
+  onView: (v: SpotView) => void;
 }) {
   const meta = eventMeta(event);
   const status = eventStatus(matches, meta);
@@ -369,9 +385,19 @@ function Spotlight({
           )}
         </span>
         <span className="h-[3px] flex-1 bg-white/10" />
+        <ViewSwitch
+          view={view}
+          drawLabel={meta.format === "knockout" ? "Draw" : "Table"}
+          onView={(v) => {
+            onView(v);
+            onHold();
+          }}
+        />
       </div>
       <div className="mt-4 min-h-0 flex-1">
-        {status.champion ? (
+        {view === "matches" ? (
+          <MatchList event={event} matches={matches} />
+        ) : status.champion ? (
           <ChampionHero meta={meta} name={status.champion} matches={matches} />
         ) : meta.format === "knockout" ? (
           <KnockoutSpot event={event} matches={matches} onHold={onHold} />
@@ -380,6 +406,156 @@ function Spotlight({
         )}
       </div>
     </section>
+  );
+}
+
+function ViewSwitch({
+  view,
+  drawLabel,
+  onView,
+}: {
+  view: SpotView;
+  drawLabel: string;
+  onView: (v: SpotView) => void;
+}) {
+  const opts: { id: SpotView; label: string }[] = [
+    { id: "matches", label: "All matches" },
+    { id: "draw", label: drawLabel },
+  ];
+  return (
+    <div className="flex shrink-0 rounded-full bg-white/[0.07] p-1">
+      {opts.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          onClick={() => onView(o.id)}
+          aria-pressed={view === o.id}
+          className={cn(
+            "h-9 rounded-full px-4 text-[15px] font-black transition-colors duration-200",
+            view === o.id ? "bg-optic text-ink" : "text-white/60 hover:text-white",
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const LIST_ROW = 46;
+const LIST_ROWS = 10;
+
+/**
+ * Every match of the event in calling order (match number), flowing down then across, so
+ * the desk can read who to call: live in red, ready to call in yellow, results with scores.
+ */
+function MatchList({ event, matches }: { event: EventId; matches: Match[] }) {
+  const list = playable(matches.filter((m) => m.event === event)).sort(byNo);
+  if (!list.length) return <Empty text="Fixtures coming up" />;
+  const cols = Math.max(1, Math.ceil(list.length / LIST_ROWS));
+  const rows = Math.ceil(list.length / cols);
+  const done = list.filter(isDone).length;
+  const live = list.filter(isLive).length;
+  const ready = list.filter((m) => !isDone(m) && !isLive(m) && sidesKnown(m)).length;
+  return (
+    <div className="spot-in flex h-full flex-col gap-3">
+      <p className="flex shrink-0 items-center gap-5 text-[14px] font-black uppercase tracking-[0.16em] text-white/50">
+        <span>{list.length} matches</span>
+        {live > 0 && (
+          <span className="flex items-center gap-2 text-live">
+            <span className="live-dot size-2 rounded-full bg-live" /> {live} on court
+          </span>
+        )}
+        {ready > 0 && <span className="text-optic">{ready} ready to call</span>}
+        <span>{done} done</span>
+      </p>
+      <ol
+        className="grid min-h-0 gap-x-3 gap-y-1.5"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${rows}, ${LIST_ROW}px)`,
+          gridAutoFlow: "column",
+        }}
+      >
+        {list.map((m) => (
+          <ListRow key={m.id} match={m} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+const sidesKnown = (m: Match) => m.players1.length > 0 && m.players2.length > 0;
+
+const shortRound = (m: Match) => {
+  if (m.stage === "group") return m.group ? `Grp ${m.group}` : "Group";
+  if (m.size === 2) return "Final";
+  if (m.size === 4) return "SF";
+  if (m.size === 8) return "QF";
+  return m.size ? `R${m.size}` : (m.round ?? "");
+};
+
+function ListRow({ match }: { match: Match }) {
+  const s = matchScore(match);
+  const live = isLive(match);
+  const ready = !s.done && !live && sidesKnown(match);
+  const side = (n: 1 | 2) => {
+    const players = n === 1 ? match.players1 : match.players2;
+    const won = s.winner === n;
+    const lost = s.winner !== 0 && !won;
+    return (
+      <span className="flex min-w-0 items-center gap-2">
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-[15px] leading-[19px]",
+            players.length ? "font-extrabold" : "font-semibold italic text-white/40",
+            lost && "opacity-45",
+          )}
+        >
+          {sideName(match, n)}
+        </span>
+        {s.started && (
+          <span
+            className={cn(
+              "font-narrow w-6 shrink-0 text-right text-[19px] font-black leading-none",
+              won && "text-optic",
+              lost && "opacity-45",
+            )}
+          >
+            {n === 1 ? s.points1 : s.points2}
+          </span>
+        )}
+      </span>
+    );
+  };
+  return (
+    <li
+      className={cn(
+        "flex min-w-0 items-center gap-2.5 rounded-[11px] pr-3",
+        live ? "bg-white/[0.1] ring-2 ring-live ring-inset" : "bg-white/[0.05]",
+        s.done && "bg-white/[0.025]",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-full w-[52px] shrink-0 flex-col items-center justify-center rounded-l-[11px] leading-none",
+          live
+            ? "bg-live text-white"
+            : ready
+              ? "bg-optic text-ink"
+              : "bg-white/[0.06] text-white/55",
+        )}
+      >
+        <span className="font-narrow text-[19px] font-black">M{match.no ?? ""}</span>
+        <span className="mt-0.5 text-[9.5px] font-black uppercase tracking-[0.06em]">
+          {match.court ? `C${match.court}` : shortRound(match)}
+        </span>
+      </span>
+      <span className={cn("flex min-w-0 flex-1 flex-col", s.done && "opacity-70")}>
+        {side(1)}
+        {side(2)}
+      </span>
+    </li>
   );
 }
 
