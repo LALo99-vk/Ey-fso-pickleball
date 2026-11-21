@@ -107,7 +107,7 @@ export function PresentView({ data, matches, onExit, initialEvent }: Props) {
   }, [onExit]);
 
   const statuses = useMemo(() => EVENTS.map((e) => eventStatus(matches, e)), [matches]);
-  const { spot, pinned, toggle, cycleKey } = useSpotlight(
+  const { spot, pinned, toggle, hold, cycleKey } = useSpotlight(
     Math.max(
       0,
       EVENTS.findIndex((e) => e.id === initialEvent),
@@ -131,7 +131,7 @@ export function PresentView({ data, matches, onExit, initialEvent }: Props) {
             onPick={toggle}
           />
           <div className="grid min-h-0 flex-1 grid-cols-[1fr_430px] gap-6 px-7 pb-6 pt-5">
-            <Spotlight key={event} event={event} data={data} matches={matches} />
+            <Spotlight key={event} event={event} data={data} matches={matches} onHold={hold} />
             <Rail matches={matches} />
           </div>
         </div>
@@ -179,7 +179,12 @@ function useSpotlight(start: number) {
     }
     setCycleKey((k) => k + 1);
   };
-  return { spot, pinned, toggle, cycleKey };
+  /** Stay on the current event (someone is browsing its rounds). */
+  const hold = () => {
+    setPinned(true);
+    setCycleKey((k) => k + 1);
+  };
+  return { spot, pinned, toggle, hold, cycleKey };
 }
 
 /* ------------------------------------------------------------------ *
@@ -338,10 +343,12 @@ function Spotlight({
   event,
   data,
   matches,
+  onHold,
 }: {
   event: EventId;
   data: Tournament;
   matches: Match[];
+  onHold: () => void;
 }) {
   const meta = eventMeta(event);
   const status = eventStatus(matches, meta);
@@ -367,7 +374,7 @@ function Spotlight({
         {status.champion ? (
           <ChampionHero meta={meta} name={status.champion} matches={matches} />
         ) : meta.format === "knockout" ? (
-          <KnockoutSpot event={event} matches={matches} />
+          <KnockoutSpot event={event} matches={matches} onHold={onHold} />
         ) : (
           <GroupSpot event={event} data={data} matches={matches} />
         )}
@@ -404,59 +411,99 @@ function ChampionHero({
   );
 }
 
-/** The round being played now; beside it the next round, when both are small (QF → SF, SF → F). */
-function KnockoutSpot({ event, matches }: { event: EventId; matches: Match[] }) {
+/**
+ * The round being played now; beside it the next round, when both are small (QF → SF, SF → F).
+ * Tap a round in the path to look at it instead; that holds the board on this event.
+ */
+function KnockoutSpot({
+  event,
+  matches,
+  onHold,
+}: {
+  event: EventId;
+  matches: Match[];
+  onHold: () => void;
+}) {
+  const [picked, setPicked] = useState<number | null>(null);
   const ko = playable(matches.filter((m) => m.event === event && m.stage === "ko"));
   const sizes = [...new Set(ko.map((m) => m.size))].sort((a, b) => b - a);
   const current = sizes.find((sz) => ko.some((m) => m.size === sz && !isDone(m))) ?? sizes.at(-1);
   if (current === undefined) return <Empty text="Draw coming up" />;
-  const round = ko.filter((m) => m.size === current).sort(byNo);
-  const nextSize = sizes[sizes.indexOf(current) + 1];
+  const shown = picked !== null && sizes.includes(picked) ? picked : current;
+  const round = ko.filter((m) => m.size === shown).sort(byNo);
+  const nextSize = sizes[sizes.indexOf(shown) + 1];
   const next = nextSize !== undefined ? ko.filter((m) => m.size === nextSize).sort(byNo) : [];
-  const pair = round.length <= 4 && next.length > 0 && next.length <= 4;
+  const pair = picked === null && round.length <= 4 && next.length > 0 && next.length <= 4;
+  const pick = (sz: number) => {
+    setPicked(sz === current ? null : sz);
+    onHold();
+  };
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <RoundPath sizes={sizes} current={current} />
+      <RoundPath sizes={sizes} current={current} shown={shown} onPick={pick} />
       {pair ? (
         <div className="grid min-h-0 flex-1 grid-cols-2 gap-6">
-          <RoundColumn title={roundsLabel(current)} matches={round} />
+          <RoundColumn title={roundsLabel(shown)} matches={round} />
           <RoundColumn title={`Next: ${roundsLabel(nextSize!)}`} matches={next} faded />
         </div>
       ) : (
-        <RoundGrid matches={round} />
+        <RoundGrid key={shown} matches={round} />
       )}
     </div>
   );
 }
 
-function RoundPath({ sizes, current }: { sizes: number[]; current: number }) {
+function RoundPath({
+  sizes,
+  current,
+  shown,
+  onPick,
+}: {
+  sizes: number[];
+  current: number;
+  shown: number;
+  onPick: (size: number) => void;
+}) {
   const short = (sz: number) => (sz === 2 ? "Final" : sz === 4 ? "SF" : sz === 8 ? "QF" : `R${sz}`);
   return (
-    <ol className="flex shrink-0 items-center">
-      {sizes.map((sz, i) => {
-        const state = sz > current ? "done" : sz === current ? "now" : "later";
-        return (
-          <li key={sz} className="flex items-center">
-            {i > 0 && (
-              <span
-                className={cn("h-[2px] w-8", state === "later" ? "bg-white/12" : "bg-optic/50")}
-              />
-            )}
-            <span
-              className={cn(
-                "grid h-9 min-w-[64px] place-items-center rounded-full px-4 text-[15px] font-black uppercase tracking-[0.08em]",
-                state === "now" && "bg-optic text-ink",
-                state === "done" && "bg-optic/20 text-optic",
-                state === "later" && "bg-white/[0.06] text-white/40",
+    <div className="flex shrink-0 items-center gap-5">
+      <ol className="flex items-center">
+        {sizes.map((sz, i) => {
+          const state = sz > current ? "done" : sz === current ? "now" : "later";
+          const on = sz === shown;
+          return (
+            <li key={sz} className="flex items-center">
+              {i > 0 && (
+                <span
+                  className={cn("h-[2px] w-8", state === "later" ? "bg-white/12" : "bg-optic/50")}
+                />
               )}
-            >
-              {short(sz)}
-            </span>
-          </li>
-        );
-      })}
-    </ol>
+              <button
+                type="button"
+                onClick={() => onPick(sz)}
+                aria-pressed={on}
+                className={cn(
+                  "grid h-10 min-w-[68px] place-items-center rounded-full px-4 text-[15px] font-black uppercase tracking-[0.08em] transition-colors duration-200",
+                  state === "now" && "bg-optic text-ink",
+                  state === "done" && "bg-optic/20 text-optic",
+                  state === "later" && "bg-white/[0.06] text-white/50 hover:bg-white/[0.12]",
+                  on && state !== "now" && "bg-white text-ink hover:bg-white",
+                  on && "ring-[3px] ring-white/40 ring-offset-2 ring-offset-ink",
+                )}
+              >
+                {short(sz)}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      {shown !== current && (
+        <span className="text-[15px] font-bold text-white/45">
+          Viewing {roundsLabel(shown)} · tap {short(current)} for the round on now
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -467,7 +514,7 @@ function RoundGrid({ matches }: { matches: Match[] }) {
   const size = n <= 4 ? "lg" : n <= 8 ? "md" : "sm";
   return (
     <div
-      className="grid min-h-0 content-start gap-4 overflow-hidden"
+      className="spot-in grid min-h-0 content-start gap-4 overflow-hidden"
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {matches.map((m) => (
