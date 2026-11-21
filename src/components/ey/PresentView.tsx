@@ -37,6 +37,8 @@ type Props = {
   data: Tournament;
   matches: Match[];
   onExit: () => void;
+  /** Open the spotlight on this event (the page's ?ev=). */
+  initialEvent?: EventId | undefined;
 };
 
 /* ------------------------------------------------------------------ *
@@ -92,7 +94,7 @@ function eventStatus(matches: Match[], meta: EventMeta): EventStatus {
  * Board
  * ------------------------------------------------------------------ */
 
-export function PresentView({ data, matches, onExit }: Props) {
+export function PresentView({ data, matches, onExit, initialEvent }: Props) {
   const scale = useStageScale();
   const portrait = usePortrait();
   useWakeLock();
@@ -105,7 +107,12 @@ export function PresentView({ data, matches, onExit }: Props) {
   }, [onExit]);
 
   const statuses = useMemo(() => EVENTS.map((e) => eventStatus(matches, e)), [matches]);
-  const { spot, pinned, toggle, cycleKey } = useSpotlight();
+  const { spot, pinned, toggle, cycleKey } = useSpotlight(
+    Math.max(
+      0,
+      EVENTS.findIndex((e) => e.id === initialEvent),
+    ),
+  );
   const event = EVENTS[spot]!.id;
 
   return (
@@ -141,7 +148,7 @@ export function PresentView({ data, matches, onExit }: Props) {
         onClick={onExit}
         aria-label="Exit present mode"
         className={cn(
-          "absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-2 text-[13px] font-extrabold text-white backdrop-blur transition-opacity duration-300",
+          "absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-2 text-[13px] font-extrabold text-white backdrop-blur transition-opacity duration-300",
           controls ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >
@@ -152,8 +159,8 @@ export function PresentView({ data, matches, onExit }: Props) {
 }
 
 /** Which event the spotlight shows. Turns on its own; a tap on a card holds it, a second tap lets go. */
-function useSpotlight() {
-  const [spot, setSpot] = useState(0);
+function useSpotlight(start: number) {
+  const [spot, setSpot] = useState(start);
   const [pinned, setPinned] = useState(false);
   const [cycleKey, setCycleKey] = useState(0);
   useEffect(() => {
@@ -259,7 +266,7 @@ function EventStrip({
             onClick={() => onPick(i)}
             aria-pressed={on}
             className={cn(
-              "relative flex h-[132px] flex-col overflow-hidden rounded-[20px] px-5 pb-4 pt-4 text-left transition-colors duration-500",
+              "relative flex h-[128px] flex-col overflow-hidden rounded-[20px] px-5 pb-4 pt-4 text-left transition-colors duration-500",
               on ? "bg-optic text-ink" : "bg-white/[0.07] text-white",
             )}
           >
@@ -291,26 +298,28 @@ function EventStrip({
               className={cn("truncate text-[14px] font-bold", on ? "text-ink/65" : "text-white/55")}
             >
               {s.champion
-                ? `Champion · ${s.champion}`
+                ? `Champion: ${s.champion}`
                 : s.started
-                  ? `${s.stage} · ${s.played} of ${s.total} played`
-                  : `Starts ${s.meta.start} · ${s.meta.formatLabel}`}
+                  ? `${s.stage}, ${s.played}/${s.total} played`
+                  : `Starts ${s.meta.start}`}
             </span>
-            <span
-              className={cn(
-                "mt-auto h-[6px] overflow-hidden rounded-full",
-                on ? "bg-ink/15" : "bg-white/10",
-              )}
-            >
+            {s.started && !s.champion && (
               <span
-                className={cn("block h-full rounded-full", on ? "bg-ink" : "bg-optic")}
-                style={{ width: `${pct}%` }}
-              />
-            </span>
+                className={cn(
+                  "mt-auto h-[5px] overflow-hidden rounded-full",
+                  on ? "bg-ink/15" : "bg-white/10",
+                )}
+              >
+                <span
+                  className={cn("block h-full rounded-full", on ? "bg-ink" : "bg-optic")}
+                  style={{ width: `${pct}%` }}
+                />
+              </span>
+            )}
             {on && !pinned && (
               <span
                 key={cycleKey}
-                className="spot-timer absolute inset-x-0 bottom-0 h-[3px] origin-left bg-ink/40"
+                className="spot-timer absolute inset-x-0 bottom-0 h-[4px] origin-left bg-ink/35"
                 style={{ animationDuration: `${SPOT_MS}ms` }}
               />
             )}
@@ -341,8 +350,16 @@ function Spotlight({
       <div className="flex h-[52px] shrink-0 items-center gap-4">
         <span className="h-[3px] w-10 bg-optic" />
         <h2 className="text-[38px] font-black leading-none tracking-[-0.02em]">{meta.name}</h2>
-        <span className="text-[20px] font-bold text-white/55">
-          {status.champion ? "Complete" : status.started ? status.stage : `Starts ${meta.start}`}
+        <span className="flex items-center gap-3 text-[20px] font-bold text-white/55">
+          {status.champion ? (
+            "Complete"
+          ) : (
+            <>
+              <span>{meta.formatLabel}</span>
+              <span className="size-1.5 rounded-full bg-white/30" />
+              <span>Starts {meta.start}</span>
+            </>
+          )}
         </span>
         <span className="h-[3px] flex-1 bg-white/10" />
       </div>
@@ -387,7 +404,7 @@ function ChampionHero({
   );
 }
 
-/** The round being played now; with a small round, the one after it too. */
+/** The round being played now; beside it the next round, when both are small (QF → SF, SF → F). */
 function KnockoutSpot({ event, matches }: { event: EventId; matches: Match[] }) {
   const ko = playable(matches.filter((m) => m.event === event && m.stage === "ko"));
   const sizes = [...new Set(ko.map((m) => m.size))].sort((a, b) => b - a);
@@ -395,16 +412,20 @@ function KnockoutSpot({ event, matches }: { event: EventId; matches: Match[] }) 
   if (current === undefined) return <Empty text="Draw coming up" />;
   const round = ko.filter((m) => m.size === current).sort(byNo);
   const nextSize = sizes[sizes.indexOf(current) + 1];
-  const showNext = round.length <= 4 && nextSize !== undefined;
-  const next = showNext ? ko.filter((m) => m.size === nextSize).sort(byNo) : [];
+  const next = nextSize !== undefined ? ko.filter((m) => m.size === nextSize).sort(byNo) : [];
+  const pair = round.length <= 4 && next.length > 0 && next.length <= 4;
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full flex-col gap-5">
       <RoundPath sizes={sizes} current={current} />
-      <div className={cn("grid min-h-0 flex-1 gap-6", showNext && "grid-cols-[1fr_1fr]")}>
-        <RoundBlock title={roundsLabel(current)} matches={round} wide={!showNext} />
-        {showNext && <RoundBlock title={`Then: ${roundsLabel(nextSize!)}`} matches={next} faded />}
-      </div>
+      {pair ? (
+        <div className="grid min-h-0 flex-1 grid-cols-2 gap-6">
+          <RoundColumn title={roundsLabel(current)} matches={round} />
+          <RoundColumn title={`Next: ${roundsLabel(nextSize!)}`} matches={next} faded />
+        </div>
+      ) : (
+        <RoundGrid matches={round} />
+      )}
     </div>
   );
 }
@@ -412,18 +433,22 @@ function KnockoutSpot({ event, matches }: { event: EventId; matches: Match[] }) 
 function RoundPath({ sizes, current }: { sizes: number[]; current: number }) {
   const short = (sz: number) => (sz === 2 ? "Final" : sz === 4 ? "SF" : sz === 8 ? "QF" : `R${sz}`);
   return (
-    <ol className="flex shrink-0 items-center gap-2">
+    <ol className="flex shrink-0 items-center">
       {sizes.map((sz, i) => {
         const state = sz > current ? "done" : sz === current ? "now" : "later";
         return (
-          <li key={sz} className="flex items-center gap-2">
-            {i > 0 && <span className="h-[2px] w-6 bg-white/15" />}
+          <li key={sz} className="flex items-center">
+            {i > 0 && (
+              <span
+                className={cn("h-[2px] w-8", state === "later" ? "bg-white/12" : "bg-optic/50")}
+              />
+            )}
             <span
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-[15px] font-black uppercase tracking-[0.08em]",
+                "grid h-9 min-w-[64px] place-items-center rounded-full px-4 text-[15px] font-black uppercase tracking-[0.08em]",
                 state === "now" && "bg-optic text-ink",
-                state === "done" && "bg-white/10 text-white/45 line-through decoration-2",
-                state === "later" && "text-white/45 ring-2 ring-white/15 ring-inset",
+                state === "done" && "bg-optic/20 text-optic",
+                state === "later" && "bg-white/[0.06] text-white/40",
               )}
             >
               {short(sz)}
@@ -435,40 +460,45 @@ function RoundPath({ sizes, current }: { sizes: number[]; current: number }) {
   );
 }
 
-function RoundBlock({
+/** A whole round as a grid of equal cards that always fits: 2 across up to 8, 4 across up to 16. */
+function RoundGrid({ matches }: { matches: Match[] }) {
+  const n = matches.length;
+  const cols = n <= 1 ? 1 : n <= 8 ? 2 : 4;
+  const size = n <= 4 ? "lg" : n <= 8 ? "md" : "sm";
+  return (
+    <div
+      className="grid min-h-0 content-start gap-4 overflow-hidden"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
+      {matches.map((m) => (
+        <MatchCard key={m.id} match={m} size={size} />
+      ))}
+    </div>
+  );
+}
+
+function RoundColumn({
   title,
   matches,
-  wide = false,
   faded = false,
 }: {
   title: string;
   matches: Match[];
-  wide?: boolean;
   faded?: boolean;
 }) {
-  const n = matches.length;
-  const cols = wide ? (n > 8 ? 4 : n > 2 ? 2 : n) : 1;
-  const rows = Math.ceil(n / cols);
-  const size = n > 8 || (!wide && n > 4) ? "sm" : n > 4 ? "md" : "lg";
   return (
-    <div className={cn("flex min-h-0 flex-col", faded && "opacity-60")}>
-      {!wide && (
-        <p className="mb-3 text-[15px] font-black uppercase tracking-[0.2em] text-white/55">
-          {title}
-        </p>
-      )}
-      <div
-        className="grid min-h-0 flex-1 gap-3"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, minmax(0, auto))`,
-          alignContent: "start",
-        }}
+    <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
+      <p
+        className={cn(
+          "text-[14px] font-black uppercase tracking-[0.2em]",
+          faded ? "text-white/40" : "text-optic",
+        )}
       >
-        {matches.map((m) => (
-          <MatchCard key={m.id} match={m} size={size} />
-        ))}
-      </div>
+        {title}
+      </p>
+      {matches.map((m) => (
+        <MatchCard key={m.id} match={m} size="md" faded={faded} />
+      ))}
     </div>
   );
 }
@@ -514,7 +544,7 @@ function GroupSpot({
           <p className="mb-3 text-[15px] font-black uppercase tracking-[0.2em] text-white/55">
             {two ? "Top 2 of each group → semi-finals → final" : "Top 2 → the final"}
           </p>
-          <div className={cn("grid gap-3", two ? "grid-cols-3" : "grid-cols-1")}>
+          <div className={cn("grid content-start gap-3", two ? "grid-cols-3" : "grid-cols-1")}>
             {ko.map((m) => (
               <MatchCard key={m.id} match={m} size="md" label />
             ))}
@@ -540,7 +570,7 @@ function GroupTable({
 }) {
   const compact = rows.length > 5 || doubles;
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden rounded-[22px] bg-white text-ink">
+    <div className="flex min-h-0 flex-col self-start overflow-hidden rounded-[22px] bg-white text-ink">
       <div className="flex h-[48px] shrink-0 items-center justify-between bg-ink/[0.06] px-5">
         <span className="text-[18px] font-black uppercase tracking-[0.14em]">{title}</span>
         <span className="text-[15px] font-bold text-ink/55">
@@ -560,7 +590,10 @@ function GroupTable({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.key} className={cn("border-t border-ink/10", i < 2 && "bg-optic/35")}>
+            <tr
+              key={r.key}
+              className={cn("border-t border-ink/10", i < 2 && r.played > 0 && "bg-optic/35")}
+            >
               <td className="py-0 pl-5">
                 <span className="font-narrow text-[24px] font-black">{i + 1}</span>
               </td>
@@ -592,48 +625,59 @@ function GroupTable({
  * A match
  * ------------------------------------------------------------------ */
 
+const CARD = {
+  sm: { h: "h-[106px]", px: "px-4", name: "text-[17px]", num: "text-[26px] w-8" },
+  md: { h: "h-[112px]", px: "px-5", name: "text-[20px]", num: "text-[30px] w-10" },
+  lg: { h: "h-[190px]", px: "px-7", name: "text-[30px]", num: "text-[44px] w-14" },
+} as const;
+
 function MatchCard({
   match,
   size,
   tone = "dark",
   label = false,
+  faded = false,
 }: {
   match: Match;
-  size: "sm" | "md" | "lg";
+  size: keyof typeof CARD;
   tone?: "dark" | "light";
   label?: boolean;
+  faded?: boolean;
 }) {
   const s = matchScore(match);
   const live = isLive(match);
-  const name = { sm: "text-[16px]", md: "text-[20px]", lg: "text-[26px]" }[size];
-  const num = { sm: "text-[24px] w-8", md: "text-[30px] w-10", lg: "text-[40px] w-12" }[size];
-  const pad = { sm: "px-3.5 py-2.5 gap-1", md: "px-4 py-3 gap-1.5", lg: "px-6 py-5 gap-2.5" }[size];
+  const c = CARD[size];
+  const dark = tone === "dark";
   const sideRow = (side: 1 | 2) => {
     const players = side === 1 ? match.players1 : match.players2;
     const won = s.winner === side;
     const lost = s.winner !== 0 && !won;
     const score = s.started ? (side === 1 ? s.points1 : s.points2) : null;
     return (
-      <div className="flex items-center gap-3">
+      <div className={cn("flex min-h-0 flex-1 items-center gap-3", lost && "opacity-40")}>
         <span
           className={cn(
-            "min-w-0 flex-1 truncate font-extrabold",
-            name,
-            !players.length && "font-bold opacity-50",
-            lost && "opacity-45",
+            "h-[60%] w-[4px] shrink-0 rounded-full",
+            won ? (dark ? "bg-optic" : "bg-ink") : "bg-transparent",
+          )}
+        />
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate leading-tight",
+            c.name,
+            players.length ? "font-extrabold" : "font-semibold italic opacity-55",
           )}
         >
           {sideName(match, side)}
         </span>
         {won && s.walkover && (
-          <span className="text-[12px] font-black uppercase opacity-60">W/O</span>
+          <span className="text-[12px] font-black uppercase tracking-[0.1em] opacity-60">W/O</span>
         )}
         <span
           className={cn(
             "font-narrow shrink-0 text-right font-black leading-none tabular-nums",
-            num,
-            won && tone === "dark" && "text-optic",
-            lost && "opacity-45",
+            c.num,
+            won && dark && "text-optic",
           )}
         >
           {score ?? ""}
@@ -644,25 +688,28 @@ function MatchCard({
   return (
     <article
       className={cn(
-        "flex flex-col rounded-[16px]",
-        pad,
-        tone === "light" ? "bg-ink/[0.08] text-ink" : "bg-white/[0.07] text-white",
-        live && "ring-[3px] ring-live",
+        "flex shrink-0 flex-col overflow-hidden rounded-[16px] pb-1.5 pt-2.5",
+        c.h,
+        c.px,
+        dark ? "bg-white/[0.07] text-white" : "bg-ink/[0.08] text-ink",
+        live && "ring-[3px] ring-live ring-inset",
+        faded && "opacity-60",
       )}
     >
-      <div className="flex items-center justify-between gap-2 text-[12px] font-black uppercase tracking-[0.12em] opacity-55">
-        <span className="truncate">
-          {match.no !== undefined ? `M${match.no}` : ""}
+      <div className="flex h-[16px] shrink-0 items-center justify-between gap-2 text-[11.5px] font-black uppercase tracking-[0.14em]">
+        <span className="truncate opacity-45">
+          {match.no !== undefined ? `Match ${match.no}` : ""}
           {label && match.round ? ` · ${match.round}` : ""}
           {match.court ? ` · Court ${match.court}` : ""}
         </span>
         {live && (
-          <span className="flex items-center gap-1.5 text-live opacity-100">
+          <span className="flex items-center gap-1.5 text-live">
             <span className="live-dot size-1.5 rounded-full bg-live" /> Live
           </span>
         )}
       </div>
       {sideRow(1)}
+      <span className={cn("ml-[16px] h-px shrink-0", dark ? "bg-white/10" : "bg-ink/10")} />
       {sideRow(2)}
     </article>
   );

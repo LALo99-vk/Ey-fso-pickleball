@@ -175,7 +175,14 @@ function App() {
   };
 
   if (search.present) {
-    return <PresentView data={tournament} matches={matches} onExit={exitPresent} />;
+    return (
+      <PresentView
+        data={tournament}
+        matches={matches}
+        onExit={exitPresent}
+        initialEvent={search.ev}
+      />
+    );
   }
 
   const you = validMe ? (
