@@ -405,7 +405,7 @@ export function PlayersView({
 /* ------------------------------------------------------------------ */
 
 /** Events as an even segmented control: every event visible, no sideways scrolling. */
-function EventPills({
+export function EventPills({
   events,
   active,
   onChange,

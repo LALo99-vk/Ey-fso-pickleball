@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { GitFork, ListOrdered, Tv, UserRound, UsersRound } from "lucide-react";
+import { Clapperboard, GitFork, ListOrdered, Tv, UserRound, UsersRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -19,13 +19,15 @@ import { useClock } from "@/components/ey/shared";
 import { Finder, Pass, type Me } from "@/components/ey/YouView";
 import { DrawsView, GroupsView, PlayersView } from "@/components/ey/BoardViews";
 import { PresentView } from "@/components/ey/PresentView";
+import { VideosView } from "@/components/ey/VideosView";
 
-type Tab = "you" | "draws" | "groups" | "players";
+type Tab = "you" | "draws" | "groups" | "players" | "videos";
 const TABS: { id: Tab; label: string; icon: typeof UserRound }[] = [
   { id: "you", label: "You", icon: UserRound },
   { id: "draws", label: "Draws", icon: GitFork },
   { id: "groups", label: "Groups", icon: ListOrdered },
   { id: "players", label: "Players", icon: UsersRound },
+  { id: "videos", label: "Videos", icon: Clapperboard },
 ];
 
 /** Match day (local time). Countdowns and the "now" line only show on this day. */
@@ -224,6 +226,13 @@ function App() {
         onEvent={setEvent("players")}
         onPick={setMe}
       />
+    ) : t === "videos" ? (
+      <VideosView
+        matches={matches}
+        me={myName}
+        event={pickEvent(EVENTS)}
+        onEvent={setEvent("videos")}
+      />
     ) : null;
 
   return (
@@ -311,7 +320,7 @@ function App() {
         aria-label="Sections"
         className="bottom-nav fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
       >
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-1 rounded-[22px] bg-ink p-1.5 shadow-[0_12px_32px_-12px_oklch(0.25_0.02_285/0.7)]">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1 rounded-[22px] bg-ink p-1.5 shadow-[0_12px_32px_-12px_oklch(0.25_0.02_285/0.7)]">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}

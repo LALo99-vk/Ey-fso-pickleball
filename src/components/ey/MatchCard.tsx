@@ -66,7 +66,7 @@ function Status({ state, walkover }: { state: string; walkover: boolean }) {
   );
 }
 
-function Side({
+export function Side({
   match,
   side,
   win,

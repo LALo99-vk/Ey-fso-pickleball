@@ -1,0 +1,215 @@
+[
+  {
+    "event": "MS",
+    "matchId": "39",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/90cdf18d6e43b0d09bb5939e272125ac_s_796f5515-d0e2-4592-940a-18c0952b607d_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/796f5515-d0e2-4592-940a-18c0952b607d/90cdf18d6e43b0d09bb5939e272125ac_s_796f5515-d0e2-4592-940a-18c0952b607d_0_thumbnail.jpg",
+        "seconds": 311
+      },
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/d68b4aba184324d5fab4bcbb30249e4c_s_796f5515-d0e2-4592-940a-18c0952b607d_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/796f5515-d0e2-4592-940a-18c0952b607d/d68b4aba184324d5fab4bcbb30249e4c_s_796f5515-d0e2-4592-940a-18c0952b607d_0_thumbnail.jpg",
+        "seconds": 488
+      }
+    ]
+  },
+  {
+    "event": "MS",
+    "matchId": "44",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/31a9cbb1204d82ce4b166dae8b657068_s_6c0588c8-a226-40ab-86d6-f61af242659f_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/6c0588c8-a226-40ab-86d6-f61af242659f/31a9cbb1204d82ce4b166dae8b657068_s_6c0588c8-a226-40ab-86d6-f61af242659f_0_thumbnail.jpg",
+        "seconds": 1185
+      }
+    ]
+  },
+  {
+    "event": "MS",
+    "matchId": "46",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/9143ec056646aca8d1e4029afd4442e7_s_61646613-96b5-4747-a332-de695ce5885e_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/61646613-96b5-4747-a332-de695ce5885e/9143ec056646aca8d1e4029afd4442e7_s_61646613-96b5-4747-a332-de695ce5885e_0_thumbnail.jpg",
+        "seconds": 520
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "61",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/de57e32455403dd2421699acc636d4f3_s_e0824314-cb92-467f-9c96-4d1b2b846a91_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/e0824314-cb92-467f-9c96-4d1b2b846a91/de57e32455403dd2421699acc636d4f3_s_e0824314-cb92-467f-9c96-4d1b2b846a91_0_thumbnail.jpg",
+        "seconds": 294
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "63",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/2af5edced64b189fc8cb97acbdbde4b4_s_bf32d356-f857-411a-bbd6-b399fa10f239_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/bf32d356-f857-411a-bbd6-b399fa10f239/2af5edced64b189fc8cb97acbdbde4b4_s_bf32d356-f857-411a-bbd6-b399fa10f239_0_thumbnail.jpg",
+        "seconds": 640
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "62",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/5370f8719c4dc17c3a12888f4983830a_s_b8ccec39-5be3-4abc-bdd8-ed2f07a86b1c_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/b8ccec39-5be3-4abc-bdd8-ed2f07a86b1c/5370f8719c4dc17c3a12888f4983830a_s_b8ccec39-5be3-4abc-bdd8-ed2f07a86b1c_0_thumbnail.jpg",
+        "seconds": 891
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "59",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/47632a2e0e41c1a1377ec7ba3ca492c3_s_8381b6a7-6ed7-43e0-b274-571bfbccc0e9_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/8381b6a7-6ed7-43e0-b274-571bfbccc0e9/47632a2e0e41c1a1377ec7ba3ca492c3_s_8381b6a7-6ed7-43e0-b274-571bfbccc0e9_0_thumbnail.jpg",
+        "seconds": 437
+      }
+    ]
+  },
+  {
+    "event": "XD",
+    "matchId": "100",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/89d8b9df024503ecea3dc684997c7ef3_s_eff1430b-41ac-4282-a9a4-5f0509ed93f2_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/eff1430b-41ac-4282-a9a4-5f0509ed93f2/89d8b9df024503ecea3dc684997c7ef3_s_eff1430b-41ac-4282-a9a4-5f0509ed93f2_0_thumbnail.jpg",
+        "seconds": 981
+      }
+    ]
+  },
+  {
+    "event": "XD",
+    "matchId": "99",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/510c9a9a81409ecd69186fb3c2ebe60b_s_20422836-82d0-4d9c-98f5-67093508a144_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/20422836-82d0-4d9c-98f5-67093508a144/510c9a9a81409ecd69186fb3c2ebe60b_s_20422836-82d0-4d9c-98f5-67093508a144_0_thumbnail.jpg",
+        "seconds": 550
+      },
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/93a026b1e14a7632089c24a79a0074a7_s_20422836-82d0-4d9c-98f5-67093508a144_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/20422836-82d0-4d9c-98f5-67093508a144/93a026b1e14a7632089c24a79a0074a7_s_20422836-82d0-4d9c-98f5-67093508a144_0_thumbnail.jpg",
+        "seconds": 330
+      }
+    ]
+  },
+  {
+    "event": "XD",
+    "matchId": "101",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/b49d0672924e73bdeb9f06b49447adf3_s_a8d1942a-fe1c-4f7f-99fa-ee4d9453cd79_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/a8d1942a-fe1c-4f7f-99fa-ee4d9453cd79/b49d0672924e73bdeb9f06b49447adf3_s_a8d1942a-fe1c-4f7f-99fa-ee4d9453cd79_0_thumbnail.jpg",
+        "seconds": 1041
+      }
+    ]
+  },
+  {
+    "event": "MS",
+    "matchId": "54",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/3b30d064144013c4565604a1b0965f7a_s_f0739bbd-2a6a-4a62-a15d-f9acf7ddf809_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/f0739bbd-2a6a-4a62-a15d-f9acf7ddf809/3b30d064144013c4565604a1b0965f7a_s_f0739bbd-2a6a-4a62-a15d-f9acf7ddf809_0_thumbnail.jpg",
+        "seconds": 453
+      }
+    ]
+  },
+  {
+    "event": "MS",
+    "matchId": "47",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/80146f81f0459d3040bcf58c002e26ab_s_37585cf8-e689-4752-bfc9-89af9297fdff_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/37585cf8-e689-4752-bfc9-89af9297fdff/80146f81f0459d3040bcf58c002e26ab_s_37585cf8-e689-4752-bfc9-89af9297fdff_0_thumbnail.jpg",
+        "seconds": 588
+      }
+    ]
+  },
+  {
+    "event": "WS",
+    "matchId": "91",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/8de87ea5fd4956bd0679ce96b3ae7b24_s_d8a8f641-5fd3-4a7e-809f-f4f783a7e73b_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/d8a8f641-5fd3-4a7e-809f-f4f783a7e73b/8de87ea5fd4956bd0679ce96b3ae7b24_s_d8a8f641-5fd3-4a7e-809f-f4f783a7e73b_0_thumbnail.jpg",
+        "seconds": 895
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "75",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/95ae40c73f4cee1fac6eeba37da63463_s_59354a0f-d479-4330-a197-9543f8646201_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/59354a0f-d479-4330-a197-9543f8646201/95ae40c73f4cee1fac6eeba37da63463_s_59354a0f-d479-4330-a197-9543f8646201_0_thumbnail.jpg",
+        "seconds": 1116
+      }
+    ]
+  },
+  {
+    "event": "MS",
+    "matchId": "65",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/fececb5004479c438ea99eb0a6257aa2_s_b25140b0-0fef-4256-9f11-9f85a6275e25_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/b25140b0-0fef-4256-9f11-9f85a6275e25/fececb5004479c438ea99eb0a6257aa2_s_b25140b0-0fef-4256-9f11-9f85a6275e25_0_thumbnail.jpg",
+        "seconds": 1176
+      }
+    ]
+  },
+  {
+    "event": "WD",
+    "matchId": "56",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/440496181141f668899580b3fc770c2b_s_7474ab0a-6647-4eec-bab6-f6ccbab2e568_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/7474ab0a-6647-4eec-bab6-f6ccbab2e568/440496181141f668899580b3fc770c2b_s_7474ab0a-6647-4eec-bab6-f6ccbab2e568_0_thumbnail.jpg",
+        "seconds": 1606
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "70",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/c5ff0b84184d3a45f9dcbdb7ab53f215_s_03c58ba7-03ec-481b-b814-407016619bb6_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/03c58ba7-03ec-481b-b814-407016619bb6/c5ff0b84184d3a45f9dcbdb7ab53f215_s_03c58ba7-03ec-481b-b814-407016619bb6_0_thumbnail.jpg",
+        "seconds": 799
+      }
+    ]
+  },
+  {
+    "event": "MD",
+    "matchId": "86",
+    "clips": [
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/10b516d4e74ec79ac1d0c2a8a58d3fd7_s_a1d783a0-bdbc-4497-accc-4a3a5a80b649_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/a1d783a0-bdbc-4497-accc-4a3a5a80b649/10b516d4e74ec79ac1d0c2a8a58d3fd7_s_a1d783a0-bdbc-4497-accc-4a3a5a80b649_0_thumbnail.jpg",
+        "seconds": 1545
+      },
+      {
+        "url": "https://pro-match-recording.playmotech.com/recordings/d78a40faeb44b09e1735db865f01918e_s_a1d783a0-bdbc-4497-accc-4a3a5a80b649_0.mp4",
+        "thumbnailUrl": "https://pro-match-recording.playmotech.com/thumbnails/a1d783a0-bdbc-4497-accc-4a3a5a80b649/d78a40faeb44b09e1735db865f01918e_s_a1d783a0-bdbc-4497-accc-4a3a5a80b649_0_thumbnail.jpg",
+        "seconds": 983
+      }
+    ]
+  }
+]
